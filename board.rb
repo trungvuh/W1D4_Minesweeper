@@ -2,7 +2,7 @@ require 'tile'
 
 class Board
 
-  attr_reader :height, :width
+  attr_reader :height, :width, :grid
 
   def initialize(height, width, bomb_count)
     @grid = Array.new(height) { Array.new(width) }
@@ -24,7 +24,15 @@ class Board
   end
 
   def render
-
+    str = ""
+    @width.each { |col_dex| str << " #{col_dex}" }
+    str << "\n"
+    @height.each do |row_dex|
+      str << "#{row_dex} "
+      @grid[row_dex].each { |tile| str << tile.to_s + " " }
+      str << "\n"
+    end
+    p str
   end
 
   def [](pos)
@@ -35,19 +43,6 @@ class Board
   def []=(pos, tile)
     x, y = pos
     @grid[x][y] = tile
-  end
-
-  def get_tile_surroundings(pos)
-    positions_to_check = []
-    row, col = pos
-    ((row-1)..(row+1)).each do |i|
-      ((col-1)..(col+1)).each do |j|
-        if i.between?(0..@height) && j.between?(0..@width)
-          positions_to_check << [i, j] unless [i, j] == pos
-        end
-      end
-    end
-    positions_to_check
   end
 
   def find_bombs_around_tiles
@@ -63,6 +58,19 @@ class Board
         self[row_index, col_index].bombs_around_me = surrounding_bomb_count
       end
     end
+  end
+
+  def get_tile_surroundings(pos)
+    positions_to_check = []
+    row, col = pos
+    ((row-1)..(row+1)).each do |i|
+      ((col-1)..(col+1)).each do |j|
+        if i.between?(0..@height) && j.between?(0..@width)
+          positions_to_check << [i, j] unless [i, j] == pos
+        end
+      end
+    end
+    positions_to_check
   end
 
   def check_surrounding_positions(positions_to_check)
@@ -86,6 +94,9 @@ class Board
       return "lose"
     else
       self[pos].be_guessed
+      unless self[pos].contains_bomb
+        check_surrounding_positions(get_tile_surroundings(pos))
+      end
     end
   end
 

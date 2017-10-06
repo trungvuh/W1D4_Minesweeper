@@ -1,16 +1,19 @@
+require 'board'
+
 class Game
 
   def initialize(board)
     @board = board
+    @board.populate_minefield
+    @board.find_bombs_around_tiles
   end
 
   def win?
-
+    tiles_to_check = @board.grid.flatten
+    tiles_to_check.reject! { |tile| tile.contains_bomb }
+    tiles_to_check.all? { |tile| tile.guessed_state == true }
   end
 
-  def lose?
-
-  end
 
   def valid_pos?(pos)
     pos.is_a?(Array) &&
@@ -58,11 +61,23 @@ class Game
     pos
   end
 
-  def play_turn
-    board.render
-    guess_type = get_guess_type
-    position = get_position
-    board.receive_guess(guess_type, position)
+  def play
+    until win?
+      board.render
+      guess_type = get_guess_type
+      position = get_position
+      board.receive_guess(guess_type, position)
+      if board.receive_guess(guess_type, position) == "lose"
+        break
+      end
+    end
+    if win?
+      board.render
+      puts 'winner!'
+    else
+      board.render
+      puts 'loser!'
+    end
   end
 
 end
