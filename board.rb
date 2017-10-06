@@ -1,4 +1,5 @@
-require 'tile'
+require_relative 'tile'
+require 'byebug'
 
 class Board
 
@@ -10,9 +11,9 @@ class Board
     @height = height
     @width = width
     @tiles = []
-    bomb_count.times { tiles << Tile.new(true) }
-    (tile_count - bomb_count).times { tiles << Tile.new(false) }
-    tiles.shuffle!
+    bomb_count.times { @tiles << Tile.new(true) }
+    (tile_count - bomb_count).times { @tiles << Tile.new(false) }
+    @tiles.shuffle!
   end
 
   def populate_minefield
@@ -47,15 +48,15 @@ class Board
 
   def find_bombs_around_tiles
     @grid.each_index do |row_index|
-      row_index.each do |col_index|
+      @grid[row_index].each_index do |col_index|
         surroundings = get_tile_surroundings([row_index, col_index])
         surrounding_bomb_count = 0
         surroundings.each do |surrounding_position|
-          if self[surrounding_position].contains_bomb
+          if self[surrounding_position].contains_bomb == true
             surrounding_bomb_count += 1
           end
         end
-        self[row_index, col_index].bombs_around_me = surrounding_bomb_count
+        self[[row_index, col_index]].bombs_around_me = surrounding_bomb_count
       end
     end
   end
@@ -65,11 +66,12 @@ class Board
     row, col = pos
     ((row-1)..(row+1)).each do |i|
       ((col-1)..(col+1)).each do |j|
-        if i.between?(0..@height) && j.between?(0..@width)
-          positions_to_check << [i, j] unless [i, j] == pos
+        if i.between?(0, @height) && j.between?(0, @width)
+          positions_to_check << [i, j] if pos != [i, j]
         end
       end
     end
+    byebug
     positions_to_check
   end
 

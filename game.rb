@@ -1,4 +1,4 @@
-require 'board'
+require_relative 'board'
 
 class Game
 
@@ -80,4 +80,10 @@ class Game
     end
   end
 
+end
+
+if __FILE__ == $PROGRAM_NAME
+  board = Board.new(2,2,1)
+  game = Game.new(board)
+  game.play
 end
